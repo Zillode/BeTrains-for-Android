@@ -336,30 +336,23 @@ public class PlannerFragment extends ListFragment {
 
     private void fillData() {
 
-        if (allConnections != null && allConnections.connection != null) {
-            connAdapter = new ConnectionAdapter(this.getActivity()
-                    .getBaseContext(), R.layout.row_planner,
-                    allConnections.connection
-            );
-            setListAdapter(connAdapter);
-            registerForContextMenu(getListView());
-
-        } else {
+        if (allConnections == null || allConnections.connection == null) {
+            Log.w("FillData", "Accessing cached connections");
             allConnections = Utils.getCachedConnections();
-
-            if (allConnections != null) {
-                connAdapter = new ConnectionAdapter(this.getActivity()
-                        .getBaseContext(), R.layout.row_planner,
-                        allConnections.connection
-                );
-                setListAdapter(connAdapter);
-                registerForContextMenu(getListView());
-            } else {
-                fillWithTips();
-            }
-
         }
-
+        if (allConnections == null || allConnections.connection == null) {
+            Log.w("FillData", "FillWithTips");
+            fillWithTips();
+            return;
+        }
+        Log.w("FillData", "Actual data");
+        connAdapter = new ConnectionAdapter(this.getActivity()
+                .getBaseContext(), R.layout.row_planner,
+                allConnections.connection
+        );
+        setListAdapter(connAdapter);
+        registerForContextMenu(getListView());
+        return;
     }
 
     public void fillWithTips() {
@@ -403,10 +396,13 @@ public class PlannerFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-        positionClicked = position;
+
+        if (allConnections == null || allConnections.connection == null) {
+          return;
+        }
 
         try {
-
+          positionClicked = position;
             Connection currentConnection = allConnections.connection
                     .get(positionClicked);
             FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -544,7 +540,7 @@ public class PlannerFragment extends ListFragment {
                 Utils.formatDate(mDate.getTime(), "HH"),
                 Utils.formatDate(mDate.getTime(), "mm"), langue, myStart,
                 myArrival, dA, getActivity());
-
+        Log.d("BETRAINS", "Connections: "+allConnections.toString()+ " -- " + allConnections.connection.toString());
         if (allConnections == null) {
             //Log.e(TAG, "API failure!!!");
             if (getActivity() != null)
